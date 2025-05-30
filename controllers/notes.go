@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"gin-framework/middleware"
 	"gin-framework/services"
 	"strconv"
 
@@ -20,6 +21,7 @@ func (n *NotesController) InitController(notesService *services.NotesService ) *
 func (n *NotesController) InitRoutes(router *gin.Engine ) {
     // n.notesService = notesService 
     notes := router.Group("/notes")
+	notes.Use(middleware.CheckMiddleware)
     notes.GET("/", n.GetNotes())
     notes.POST("/", n.CreateNote())
 	notes.PUT("/", n.UpdateNotes())
