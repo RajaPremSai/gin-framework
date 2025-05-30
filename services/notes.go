@@ -1,6 +1,7 @@
 package services
 
 import (
+	"errors"
 	"fmt"
 	internal "gin-framework/internal/model"
 
@@ -21,36 +22,89 @@ type Notes struct {
 	Name string
 }
 
-func (n *NotesService) GetNotesService() []Notes {
-	data := []Notes{
-		{
-			Id:   1,
-			Name: "Note 1",
-		},
-		{
-			Id:   2,
-			Name: "Note 2",
-		},
+func (n *NotesService) GetNotesService(status bool) ([]*internal.Notes,error) {
+	var notes []*internal.Notes
+
+	if err:=n.db.Where("status= ?",status).Find(&notes).Error; err !=nil{
+		return nil,err;
 	}
-	return data
+	return notes,nil;
+
 }
 
-func (n *NotesService) CreateNoteService() Notes {
-	data := Notes{
-		Id:3,
-		Name:"Note 3", 
+func (n *NotesService) CreateNoteService(title string,status bool) (*internal.Notes, error) {
+
+	note := &internal.Notes{
+		Title:title,
+		Status:status,
 	}
 
-	err := n.db.Create(&internal.Notes{
-		Id: 1,
-		Title:"Notes",
-		Status:true,
+	if note.Title==""{
+		return nil,errors.New("Title cannot be empty");
+	}
 
-	});
+	err := n.db.Create(note).Error;
 
 	if err!=nil{
 		fmt.Println(err);
+		return nil, err
 	}
-	fmt.Println("Note created successfully")
-	return data
+	return note,nil
+}
+
+
+func (n *NotesService) UpdateNoteService(id int,title string,status bool) (*internal.Notes, error) {
+
+	var note *internal.Notes
+	if err := n.db.Where("id = ?",id).First(&note).Error; err != nil {
+		return nil, err;
+	}
+	note.Title = title
+	note.Status = status
+
+
+	if note.Title==""{
+		return nil,errors.New("title cannot be empty");
+	}
+
+	err := n.db.Save(note).Error;
+
+	if err!=nil{
+		fmt.Println(err);
+		return nil, err
+	}
+	return note,nil
+}
+
+func (n *NotesService) DeleteNoteService(id int) (*internal.Notes, error) {
+
+	var note *internal.Notes
+
+	if err := n.db.Where("id = ?",id).First(&note).Error; err != nil {
+		return nil, err;
+	}
+	if note == nil {
+		return nil, errors.New("note not found");
+	}
+	err := n.db.Delete(note).Error;
+
+	if err!=nil{
+		fmt.Println(err);
+		return nil, err
+	}
+	return note,nil
+}
+
+func (n *NotesService) GetNoteByIdService(id int) (*internal.Notes, error) {
+
+	var note *internal.Notes
+
+	if err := n.db.Where("id = ?",id).First(&note).Error; err != nil {
+		return nil, err;
+	}
+	if note == nil {
+		return nil, errors.New("note not found");
+	}
+
+	return note,nil
 }

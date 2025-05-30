@@ -22,7 +22,8 @@ func main(){
 	notesService.InitService(db)
 
 	notesController := &controllers.NotesController{}
-	notesController.InitNotesControllerRoutes(router, notesService)
+	notesController.InitController(notesService)
+	notesController.InitRoutes(router)
 
 	router.Run(":8080") // listen and serve on
 }
